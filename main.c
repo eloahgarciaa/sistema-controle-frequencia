@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 int main() {
 
@@ -8,8 +9,17 @@ int main() {
     int totalAulas, faltas;
     int faltasPermitidas, frequencia, podeFaltar;
 
+    int faltasArquivo;
+    int novasFaltas;
+
     char nomeAluno[50];
     char nomeMateria[50];
+
+    char linha[200];
+    char alunoArquivo[50];
+    char materiaArquivo[50];
+
+    int encontrado = 0;
 
     printf("===== CURSOS =====\n");
     printf("1 - Ciencia da Computacao\n");
@@ -18,18 +28,33 @@ int main() {
     printf("\nEscolha um curso: ");
     scanf("%d", &curso);
 
-
     if(curso == 1) {
 
         printf("\nAlunos:\n");
         printf("1 - Eloah\n");
         printf("2 - Yasmin\n");
+        printf("3 - Outro aluno\n");
 
         printf("\nEscolha o aluno: ");
         scanf("%d", &aluno);
 
-        if(aluno == 1) sprintf(nomeAluno, "Eloah");
-        else sprintf(nomeAluno, "Yasmin");
+        if(aluno == 1)
+            strcpy(nomeAluno, "Eloah");
+
+        else if(aluno == 2)
+            strcpy(nomeAluno, "Yasmin");
+
+        else if(aluno == 3) {
+
+            printf("Digite o nome do aluno: ");
+            scanf(" %[^\n]", nomeAluno);
+        }
+
+        else {
+
+            printf("Opcao invalida!\n");
+            return 0;
+        }
     }
 
     else if(curso == 2) {
@@ -38,19 +63,39 @@ int main() {
         printf("1 - Lucas\n");
         printf("2 - Leonardo\n");
         printf("3 - Matheus\n");
+        printf("4 - Outro aluno\n");
 
         printf("\nEscolha o aluno: ");
         scanf("%d", &aluno);
 
-        if(aluno == 1) sprintf(nomeAluno, "Lucas");
-        else if(aluno == 2) sprintf(nomeAluno, "Leonardo");
-        else sprintf(nomeAluno, "Matheus");
+        if(aluno == 1)
+            strcpy(nomeAluno, "Lucas");
+
+        else if(aluno == 2)
+            strcpy(nomeAluno, "Leonardo");
+
+        else if(aluno == 3)
+            strcpy(nomeAluno, "Matheus");
+
+        else if(aluno == 4) {
+
+            printf("Digite o nome do aluno: ");
+            scanf(" %[^\n]", nomeAluno);
+        }
+
+        else {
+
+            printf("Opcao invalida!\n");
+            return 0;
+        }
     }
 
     else {
+
         printf("Opcao invalida!\n");
         return 0;
     }
+
 
     printf("\nMaterias:\n");
     printf("1 - Fundamentos\n");
@@ -63,38 +108,100 @@ int main() {
     scanf("%d", &materia);
 
     if(materia == 1) {
+
         totalAulas = 80;
-        sprintf(nomeMateria, "Fundamentos");
+        strcpy(nomeMateria, "Fundamentos");
     }
+
     else if(materia == 2) {
+
         totalAulas = 40;
-        sprintf(nomeMateria, "Humanismo");
+        strcpy(nomeMateria, "Humanismo");
     }
+
     else if(materia == 3) {
+
         totalAulas = 80;
-        sprintf(nomeMateria, "Calculo");
+        strcpy(nomeMateria, "Calculo");
     }
+
     else if(materia == 4) {
+
         totalAulas = 80;
-        sprintf(nomeMateria, "Programacao");
+        strcpy(nomeMateria, "Programacao");
     }
+
     else if(materia == 5) {
+
         totalAulas = 80;
-        sprintf(nomeMateria, "Algoritmos");
+        strcpy(nomeMateria, "Algoritmos");
     }
+
     else {
+
         printf("Materia invalida!\n");
         return 0;
     }
 
-    printf("\nDigite o numero de faltas: ");
-    scanf("%d", &faltas);
+
+    arquivo = fopen("relatorio.txt", "r");
+
+    faltas = 0;
+
+    if(arquivo != NULL) {
+
+        while(fgets(linha, sizeof(linha), arquivo) != NULL) {
+
+            if(sscanf(linha, "Aluno: %49[^\n]", alunoArquivo) == 1) {
+
+                fgets(linha, sizeof(linha), arquivo);
+                sscanf(linha, "Materia: %49[^\n]", materiaArquivo);
+
+                fgets(linha, sizeof(linha), arquivo);
+
+                fgets(linha, sizeof(linha), arquivo);
+                sscanf(linha, "Faltas: %d", &faltasArquivo);
+
+                if(strcmp(alunoArquivo, nomeAluno) == 0 &&
+                   strcmp(materiaArquivo, nomeMateria) == 0) {
+
+                    faltas = faltasArquivo;
+                    encontrado = 1;
+                }
+            }
+        }
+
+        fclose(arquivo);
+    }
+
+
+    if(encontrado) {
+
+        printf("\nAluno ja possui registro nesta materia.\n");
+        printf("Faltas atuais: %d\n", faltas);
+
+        printf("Quantas faltas deseja adicionar? ");
+        scanf("%d", &novasFaltas);
+
+        faltas += novasFaltas;
+    }
+
+    else {
+
+        printf("\nDigite o numero de faltas: ");
+        scanf("%d", &faltas);
+    }
+
 
     faltasPermitidas = totalAulas * 25 / 100;
+
     frequencia = ((totalAulas - faltas) * 100) / totalAulas;
+
     podeFaltar = faltasPermitidas - faltas;
 
+    
     printf("\n===== RELATORIO =====\n");
+
     printf("Aluno: %s\n", nomeAluno);
     printf("Materia: %s\n", nomeMateria);
     printf("Total de aulas: %d\n", totalAulas);
@@ -103,14 +210,21 @@ int main() {
 
     if(podeFaltar > 0)
         printf("Ainda pode faltar %d aulas.\n", podeFaltar);
+
     else
         printf("Nao pode faltar mais!\n");
 
+
     arquivo = fopen("relatorio.txt", "a");
+
+    if(arquivo == NULL) {
+
+        printf("Erro ao abrir arquivo!\n");
+        return 1;
+    }
 
     fprintf(arquivo, "\n---------------------------------\n");
 
-    fprintf(arquivo, "===== RELATORIO DE FALTAS =====\n");
     fprintf(arquivo, "Aluno: %s\n", nomeAluno);
     fprintf(arquivo, "Materia: %s\n", nomeMateria);
     fprintf(arquivo, "Total de aulas: %d\n", totalAulas);
@@ -119,6 +233,7 @@ int main() {
 
     if(podeFaltar > 0)
         fprintf(arquivo, "Ainda pode faltar %d aulas.\n", podeFaltar);
+
     else
         fprintf(arquivo, "Nao pode faltar mais!\n");
 
